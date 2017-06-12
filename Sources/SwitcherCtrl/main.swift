@@ -12,70 +12,90 @@ import SerialUtils
 
 var switcher: SerialPort?
 
+// Initializes the video switcher using openPort from serialUtils
 func startSwitcher() -> Void {
     let portName: String = "/dev/cu.usbserial"
     switcher = openPort(portName: portName)
 }
 
-func turnOn(portNum: Int) -> Void {
-    do {
-        var commandInt: Int = 0x81808101 + (portNum << 16)
-        print(commandInt)
-        let commandBytes = NSData(bytes: &commandInt, length: 8)
-        var bytesWritten: Int               // # of bytes written by writeData
-        var commandReceived: Data      // result of readLine
-        
-        print("Writing test num <\(commandBytes)> to serial port")
-        
-        bytesWritten = try switcher!.writeData(commandBytes as Data)
-        
-        print("Successfully wrote \(bytesWritten) bytes")
-        print("Waiting to receive what was written...")
-        
-        commandReceived = try switcher!.readData(ofLength: bytesWritten)
-        if commandBytes as Data == commandReceived {
-            print("Received command is the same as transmitted command. Test successful!")
-        } else {
-            print("Uh oh! Received string is not the same as what was transmitted. This was what we received,")
-            print("<\(commandReceived)>")
-        }
-    } catch {
-        print("Error: \(error)")
-    }
-}
 
-func turnOnTest() -> Void {
-    do {
-        //var cmd: UInt = 0x81808101 + (3 << 16)
-        
-        var cmd: UInt32 = 0x81808101
-        let data = NSData(bytes: &cmd, length: 4)
-        
-        var bytesWritten: Int
-        var commandReceived: Data
-        
-        print("Writing <\(data)> to serial port")
-        
-        bytesWritten = try switcher!.writeData(data as Data)
-        commandReceived = try switcher!.readData(ofLength: bytesWritten)
-        
-        print("sent \(bytesWritten) of \(data)")
-//        print("received \(commandReceived)")
-        
-        
-        } catch {
-        print("Error: \(error)")
-    }
+// Turns on the video output specified by portNum on the switcher box
+func turnOn(_ portNum: Int) -> Void {
+    // uses the pattern of hex commands supplied by the Kramer manual:
+    // https://k.kramerav.com/downloads/protocols/protocol_2000_rev0_51.pdf
+    
+    var cmd: Int = 0x81808101 + (portNum << 16)
+    sendCmd(cmd: &cmd, serialPort: switcher!)
 }
 
 
-func closePort(port: SerialPort) -> Void {
+// Turns off the video output specified by portNum on the switcher box
+func turnOff(_ portNum: Int) -> Void {
+    var cmd: Int = 0x81808001 + (portNum << 16)
+    sendCmd(cmd: &cmd, serialPort: switcher!)
+}
+
+
+func closePort(_ port: SerialPort) -> Void {
     // return true if CloseHandle returns nonzero
     closePort(serialPort: port);
 }
 
 startSwitcher()
-turnOnTest()
 
+var run = true
+var input: String
+
+while run {
+    input = readLine()!
+    
+    switch input {
+    case "0":
+        turnOn(0)
+    case "1":
+        turnOn(1)
+    case "2":
+        turnOn(2)
+    case "3":
+        turnOn(3)
+    case "4":
+        turnOn(4)
+    case "5":
+        turnOn(5)
+    case "6":
+        turnOn(6)
+    case "7":
+        turnOn(7)
+    case "8":
+        turnOn(8)
+
+    case "p":
+        turnOff(0)
+    case "q":
+        turnOff(1)
+    case "w":
+        turnOff(2)
+    case "e":
+        turnOff(3)
+    case "r":
+        turnOff(4)
+    case "t":
+        turnOff(5)
+    case "y":
+        turnOff(6)
+    case "u":
+        turnOff(7)
+    case "i":
+        turnOff(8)
+        
+    case "l":
+        run = false
+        
+    default:
+        print("instructions")
+}
+}
+    
+closePort(switcher!)
 
 

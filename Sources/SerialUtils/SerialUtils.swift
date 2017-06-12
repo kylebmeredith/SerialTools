@@ -5,21 +5,19 @@
 import Foundation
 import SwiftSerial
 
+
+// Initializes a SerialPort object from the connection portName with the proper settings
+// Use      ls /dev/cu.*     in terminal to find portName
 public func openPort(portName: String) -> SerialPort {
     let serialPort: SerialPort = SerialPort(path: portName)
     
+    // Use a do catch structure, since the serialPort might fail to open
     do {
-        print("Attempting to open port: \(portName)")
         try serialPort.openPort()
         print("Serial port \(portName) opened successfully.")
-        
         serialPort.setSettings(receiveRate: .baud9600,
                                transmitRate: .baud9600,
-                               minimumBytesToRead: 1,
-                               timeout: 1,
-                               useHardwareFlowControl: true,
-                               useSoftwareFlowControl: true,
-                               processOutput: true)
+                               minimumBytesToRead: 1)
     } catch {
         print("Error: \(error)")
     }
@@ -27,33 +25,24 @@ public func openPort(portName: String) -> SerialPort {
 }
 
 
+// Closes the serial port
 public func closePort(serialPort: SerialPort) -> Void {
     serialPort.closePort()
     print("Port Closed")
 }
 
 
-extension String {
+// Sends the command cmd to the serial port serialPort
+public func sendCmd(cmd: inout Int, serialPort: SerialPort) -> Void {
+    do {
+        // convert the Int cmd to a data type, which is required by the writeData function
+        let data = NSData(bytes: &cmd, length: 4)
     
-    /// Create `Data` from hexadecimal string representation
-    ///
-    /// This takes a hexadecimal representation and creates a `Data` object. Note, if the string has any spaces or non-hex characters (e.g. starts with '<' and with a '>'), those are ignored and only hex characters are processed.
-    ///
-    /// - returns: Data represented by this hexadecimal string.
-    
-    public func hexadecimal() -> Data? {
-        var data = Data(capacity: characters.count / 2)
+        // print("Writing <\(data)> to serial port")
+        // writeData returns the number of bytes written, which we don't need
+        _ = try serialPort.writeData(data as Data)
         
-        let regex = try! NSRegularExpression(pattern: "[0-9a-f]{1,2}", options: .caseInsensitive)
-        regex.enumerateMatches(in: self, range: NSMakeRange(0, utf16.count)) { match, flags, stop in
-            let byteString = (self as NSString).substring(with: match!.range)
-            var num = UInt8(byteString, radix: 16)!
-            data.append(&num, count: 1)
-        }
-        
-        guard data.count > 0 else { return nil }
-        
-        return data
+    } catch {
+        print("Error: \(error)")
     }
-    
 }
