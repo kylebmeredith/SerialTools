@@ -26,13 +26,13 @@ public func openPort(portName: String) -> SerialPort {
 
 
 // Closes the serial port
-public func closePort(serialPort: SerialPort) -> Void {
+public func closePort(_ serialPort: SerialPort) -> Void {
     serialPort.closePort()
     print("Port Closed")
 }
 
 
-// Sends the command cmd to the serial port serialPort
+// Sends int command cmd to the serial port serialPort
 public func sendCmd(cmd: inout Int, serialPort: SerialPort) -> Void {
     do {
         // convert the Int cmd to a data type, which is required by the writeData function
@@ -41,6 +41,8 @@ public func sendCmd(cmd: inout Int, serialPort: SerialPort) -> Void {
         // print("Writing <\(data)> to serial port")
         // writeData returns the number of bytes written, which we don't need
         _ = try serialPort.writeData(data as Data)
+        let response = try serialPort.readData(ofLength: 4)
+        print(response)
         
     } catch {
         print("Error: \(error)")

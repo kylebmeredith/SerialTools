@@ -19,33 +19,30 @@ func startSwitcher() -> Void {
 }
 
 
-// Turns on the video output specified by portNum on the switcher box
-func turnOn(_ portNum: Int) -> Void {
-    // uses the pattern of hex commands supplied by the Kramer manual:
-    // https://k.kramerav.com/downloads/protocols/protocol_2000_rev0_51.pdf
-    
-    var cmd: Int = 0x81808101 + (portNum << 16)
+// The following functions use the pattern of hex commands supplied by the Kramer manual:
+// https://k.kramerav.com/downloads/protocols/protocol_2000_rev0_51.pdf
+
+// Turns on the video output specified by outNum on the switcher box
+func turnOn(_ outNum: Int) -> Void {
+    var cmd: Int = 0x81808101 + (outNum << 16)
+    sendCmd(cmd: &cmd, serialPort: switcher!)
+}
+
+// Turns off the video output specified by outNum on the switcher box
+func turnOff(_ outNum: Int) -> Void {
+    var cmd: Int = 0x81808001 + (outNum << 16)
     sendCmd(cmd: &cmd, serialPort: switcher!)
 }
 
 
-// Turns off the video output specified by portNum on the switcher box
-func turnOff(_ portNum: Int) -> Void {
-    var cmd: Int = 0x81808001 + (portNum << 16)
-    sendCmd(cmd: &cmd, serialPort: switcher!)
-}
-
-
-func closePort(_ port: SerialPort) -> Void {
-    // return true if CloseHandle returns nonzero
-    closePort(serialPort: port);
-}
 
 startSwitcher()
 
 var run = true
 var input: String
 
+// This loop will take user input until the exit key ("l" for "leave") is entered
+// The number keys turn on their respective output, while the letters below each key turn off that output. "0" and "p" turn on/off all outputs
 while run {
     input = readLine()!
     

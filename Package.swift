@@ -10,7 +10,7 @@ let package = Package(
             dependencies: ["SerialUtils"]
         ),
         Target(
-            name: "RigCtrl",
+            name: "VXMCtrl",
             dependencies: ["SerialUtils"]
         ),
         Target(name: "SerialUtils"),
