@@ -2,9 +2,8 @@
 //  VXMCCtrl.swift
 //  SerialTools
 //
-//  Created by Kyle Meredith on 6/9/17.
-//  Largely copied from INSERT THE NAME HERE
-//  MAYBE REMOVE ALL THE CHECKS FOR =1 AND MAKE CLEAR AND WAIT FUNCTIONS AND REMOVE BOOL RETURNS
+//  Largely adapted from previous C# code:
+//  http://www.cs.middlebury.edu/~schar/research/summer05/jeff/Active%20Lighting/ActiveLighting%203.3.1/VXMCtrl.cpp
 
 import Foundation
 import SwiftSerial
@@ -66,9 +65,6 @@ func startVXM() -> Bool {
 // Moves the motor to the zero position (negative limit) and sets that index to absolute zero
 func zero() {
     do {
-        // clear command memory, just in case
-        _ = try VXM!.writeString("C")
-        
         // move to the negative limit
         _ = try VXM!.writeString("I1M-0.")       //must end with . after a number
         
@@ -88,14 +84,11 @@ func zero() {
     }
 }
 
-// moves to dist millimeters from absolute zero.  dist should be
+// Moves the motor to dist millimeters from absolute zero. dist should be
 // positive, since we set absolute zero to be the negative limit.
 // note: 1 millimeter = 200 steps
 func moveTo(dist: Int) -> Void {
     do {
-        // clear command memory, just in case
-        _ = try VXM!.writeString("C")
-        
         // check the status to ready the box for the next program
         _ = try VXM!.writeString("V")
         
@@ -115,6 +108,7 @@ func moveTo(dist: Int) -> Void {
     }
 }
 
+//
 func stop() {
     do {
         // quit the controller (put it back in local mode)
@@ -127,69 +121,32 @@ func stop() {
     }
 }
 
-
 _ = startVXM()
-zero()
-moveTo(dist: 10)
+
+var run = true
+var input: String
+
+// This loop will take user input until the exit key ("l" for "leave") is entered
+// "0" triggers the zero() funcion, while all other numbers move the motor to that index
+while run {
+    input = readLine()!
+    if input == "l" {
+        run = false
+        break
+    }
+    var num = Int(input)
+    
+    switch num! {
+    case 0:
+        zero()
+    case nil:
+        print("Enter 0 to zero, int to moveTo(int in mm), l to leave")
+    default:
+        moveTo(dist: num!)
+    }
+}
+
+// After the input is finished, close the port
+stop()
 
 
-
-
-//var run = true
-//var input: String
-//
-//// This loop will take user input until the exit key ("l" for "leave") is entered
-//// The number keys turn on their respective output, while the letters below each key turn off that output. "0" and "p" turn on/off all outputs
-//while run {
-//    input = readLine()!
-//    
-//    switch input {
-//    case "0":
-//        turnOn(0)
-//    case "1":
-//        turnOn(1)
-//    case "2":
-//        turnOn(2)
-//    case "3":
-//        turnOn(3)
-//    case "4":
-//        turnOn(4)
-//    case "5":
-//        turnOn(5)
-//    case "6":
-//        turnOn(6)
-//    case "7":
-//        turnOn(7)
-//    case "8":
-//        turnOn(8)
-//        
-//    case "p":
-//        turnOff(0)
-//    case "q":
-//        turnOff(1)
-//    case "w":
-//        turnOff(2)
-//    case "e":
-//        turnOff(3)
-//    case "r":
-//        turnOff(4)
-//    case "t":
-//        turnOff(5)
-//    case "y":
-//        turnOff(6)
-//    case "u":
-//        turnOff(7)
-//    case "i":
-//        turnOff(8)
-//        
-//    case "l":
-//        run = false
-//        
-//    default:
-//        print("instructions")
-//    }
-//}
-//
-//closePort(switcher!)
-//
-//
